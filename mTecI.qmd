@@ -1,0 +1,229 @@
+---
+title: "mTecI"
+format: html
+editor: visual
+---
+
+```{r}
+library(dorothea)
+library(dplyr)
+library(Seurat)
+library(tibble)
+library(pheatmap)
+library(tidyr)
+library(viper)
+```
+
+```{r}
+library(AnnotationHub)
+# Connect to AnnotationHub
+ah <- AnnotationHub()
+# Access the Ensembl database for organism
+ahDb <- query(ah, 
+              pattern = c("Homo sapiens", "EnsDb"), 
+              ignore.case = TRUE)
+# Acquire the latest annotation files
+id <- ahDb %>%
+        mcols() %>%
+        rownames() %>%
+        tail(n = 1)
+# Download the appropriate Ensembldb database
+edb <- ah[[id]]
+# Extract gene-level information from database
+annotations <- genes(edb, 
+                     return.type = "data.frame")
+# Select annotations of interest
+annotations <- annotations %>%
+        dplyr::select(gene_id, gene_name, seq_name, gene_biotype, description)
+```
+
+```{r}
+#remotes::install_github("satijalab/seurat", "seurat5", quiet #= TRUE)
+library(dplyr)
+library(Seurat)
+library(patchwork)
+# Install the required package
+#install.packages("readr")
+# Load the installed Package
+library(readr)
+ 
+# Load the  dataset
+ 
+# For output from CellRanger < 3.0
+data_dir <- '/scratch/am12179/Capstone/mTecI'
+list.files(data_dir) # Should show barcodes.tsv, genes.tsv, and matrix.mtx
+expression_matrix <- Read10X(data.dir = data_dir)
+mTecI = CreateSeuratObject(counts = expression_matrix)
+ mTecI
+```
+
+```{r}
+mTecI[["percent.mt"]] <- PercentageFeatureSet(mTecI, pattern = "^MT-")
+```
+
+```{r}
+VlnPlot(mTecI, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+```
+
+```{r}
+# FeatureScatter is typically used to visualize feature-feature relationships, but can be used
+# for anything calculated by the object, i.e. columns in object metadata, PC scores etc.
+
+plot1 <- FeatureScatter(mTecI, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(mTecI, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
+```
+
+```{r}
+mTecI <- subset(mTecI, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
+```
+
+```{r}
+mTecI <- NormalizeData(mTecI, normalization.method = "LogNormalize", scale.factor = 10000)
+```
+
+```{r}
+suppressWarnings(suppressMessages(mTecI <- FindVariableFeatures(mTecI, selection.method = "vst",
+    nfeatures = 2000, verbose = FALSE, assay = "RNA")))
+top10 <- head(VariableFeatures(mTecI), 10)
+LabelPoints(plot = VariableFeaturePlot(mTecI), points = top10, repel = TRUE)
+```
+
+```{r}
+all.genes <- rownames(mTecI)
+mTecI <- ScaleData(mTecI, features = all.genes)
+```
+
+```{r}
+mTecI <- RunPCA(mTecI, features = VariableFeatures(object = mTecI))
+mTecI <- FindNeighbors(mTecI, dims = 1:10)
+mTecI <- FindClusters(mTecI, resolution = 0.5)
+# Look at cluster IDs of the first 5 cells
+head(Idents(mTecI), 5)
+```
+
+```{r}
+#Examine and visualize PCA results a few different ways
+print(mTecI[["pca"]], dims = 1:5, nfeatures = 5)
+VizDimLoadings(mTecI, dims = 1:2, reduction = "pca")
+```
+
+```{r}
+DimHeatmap(mTecI, dims = 1, cells = 500, balanced = TRUE)
+```
+
+```{r}
+DimHeatmap(mTecI, dims = 1:10, cells = 198, balanced = TRUE)
+```
+
+```{r}
+ElbowPlot(mTecI)
+```
+
+```{r}
+DimPlot(mTecI, reduction = "pca")
+```
+
+```{r}
+mTecI <- RunUMAP(mTecI, dims = 1:10)
+DimPlot(mTecI, reduction = "umap")
+```
+
+```{r}
+DimPlot(mTecI, reduction = "umap")
+```
+
+```{r}
+mTecI.markers <- FindAllMarkers(mTecI, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+mTecI.markers %>%
+    group_by(cluster) %>%
+    slice_max(n = 2, order_by = avg_log2FC) %>% 
+    left_join(y = unique(annotations[, c("gene_name", "description")]),
+                          by = c("gene" = "gene_name"))
+head(x = mTecI.markers)
+```
+
+```{r}
+mTecI.markers %>%
+    group_by(cluster) %>%
+    slice_max(n = 5, order_by = avg_log2FC) %>% 
+    left_join(y = unique(annotations[, c("gene_name", "description")]),
+                          by = c("gene" = "gene_name"))
+head(x = mTecI.markers)
+```
+
+```{r}
+ 
+# Rename all identities
+mTecI <- RenameIdents(object = mTecI, 
+                               "0" = "Chromosomal",
+                               "1" = "Intermediate filaments",
+                               "2" = "endoplasmic reticulum"
+                               )
+
+
+# Plot the UMAP
+DimPlot(object = mTecI, 
+        reduction = "umap", 
+        label = TRUE,
+        label.size = 3,
+        repel = TRUE)
+```
+
+```{r}
+net <- get_collectri(organism='human', split_complexes=FALSE)
+
+mat <- as.matrix(mTecI@assays$RNA@data)
+
+# Run wmean
+acts <- run_wmean(mat=mat, net=net, .source='source', .target='target',
+                  .mor='mor', times = 100, minsize = 5)
+# Extract norm_wmean and store it in tfswmean in pbmc
+mTecI[['tfswmean']] <- acts %>%
+  filter(statistic == 'norm_wmean') %>%
+  pivot_wider(id_cols = 'source', names_from = 'condition',
+              values_from = 'score') %>%
+  column_to_rownames('source') %>%
+  Seurat::CreateAssayObject(.)
+
+# Change assay
+DefaultAssay(object = mTecI) <- "tfswmean"
+
+# Scale the mTecI
+mTecI <- ScaleData(mTecI)
+mTecI@assays$tfswmean@data <- mTecI@assays$tfswmean@scale.data
+n_tfs <- 25
+# Extract activities from object as a long mTecIframe
+df <- t(as.matrix(mTecI@assays$tfswmean@data)) %>%
+  as.data.frame() %>%
+  mutate(cluster = Idents(mTecI)) %>%
+  pivot_longer(cols = -cluster, names_to = "source", values_to = "score") %>%
+  group_by(cluster, source) %>%
+  summarise(mean = mean(score))
+
+# Get top tfs with more variable means across clusters
+tfs <- df %>%
+  group_by(source) %>%
+  summarise(std = sd(mean)) %>%
+  arrange(-abs(std)) %>%
+  head(n_tfs) %>%
+  pull(source)
+
+# Subset long mTecI frame to top tfs and transform to wide matrix
+top_acts_mat <- df %>%
+  filter(source %in% tfs) %>%
+  pivot_wider(id_cols = 'cluster', names_from = 'source',
+              values_from = 'mean') %>%
+  column_to_rownames('cluster') %>%
+  as.matrix()
+
+# Choose color palette
+palette_length = 100
+my_color = colorRampPalette(c("Darkblue", "white","red"))(palette_length)
+
+my_breaks <- c(seq(-3, 0, length.out=ceiling(palette_length/2) + 1),
+               seq(0.05, 3, length.out=floor(palette_length/2)))
+
+# Plot
+pheatmap(top_acts_mat, border_color = NA, color=my_color, breaks = my_breaks) 
+```
