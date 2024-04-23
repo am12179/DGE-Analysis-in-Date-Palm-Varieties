@@ -18,7 +18,7 @@ rate of protein evolution.
 
 
 Methods: My project was executed using whole genome data from SARS and Covid-19 at the National
-Center for Biotechnology Information (NCBI) RefSeq genome collection. The software I used was R (version 4.2.2), Blast+ ( version 2.2.31+), Argtable(version 2.13), Clustal Omega (“clustalo”)(version clustalomega-1.2.4.), KaKs_Calculator (version 1.2), biomartr (version 1.0.2), and Ubuntu (version 22.04.1). Using
+Center for Biotechnology Information (NCBI) RefSeq genome collection. The software I used was R (version 4.2.2), Blast+ ( version 2.2.31+), Argtable(version 2.13), Clustal Omega (“clustalo”)(version clustalomega-1.2.4.), KaKs_Calculator (version 1.2), biomartr (version 1.0.2), and Ubuntu (version 22.04.1). Using
 Ubuntu as the operating system on Linux by which I executed all of my commands, I first installed R into
 my system. To install BLAST+, I extracted the compiled version of BLAST I retrieved from a web server,
 and copied BLAST files to usr/local/bin. Following this, I retrieved the argtable from a server, extracted
@@ -28,7 +28,7 @@ I retrieved the KaKs_Calculator file from a web servers, unzipped the file, inst
 folder. While inside this folder, I used vim base.h to edit “include<string.h>” into KaKs_Calculator. I
 finally saved and quit the file. For my next step, I downloaded several dependencies (“libfreetype6-dev”,
 “libpng-dev”,“libtiff5-dev”, “libjpeg-dev”) for devtools to run. I loaded R, then installed devtools using
-install.packages(“devtools”). To download orthologr, I Installed package dependencies (“Biostrings”, “GenomicRanges”, “GenomicFeatures”, “Rsamtools”, “rtracklayer”,“IRanges”). Next, I installed metablastr
+install.packages(“devtools”). To download orthologr, I Installed package dependencies (“Biostrings”, “GenomicRanges”, “GenomicFeatures”, “Rsamtools”, “rtracklayer”,“IRanges”). Next, I installed metablastr
 from GitHub and orthologr from GitHub. After, I installed a core Bioconductor package “BiocManager”,
 installed package dependencies which were “Biostrings” and “biomaRt”, and finally installed “biomartr”.
 Subsequently, I loaded orthologr and biomartr library. I used the biomartr package to download the CDS
