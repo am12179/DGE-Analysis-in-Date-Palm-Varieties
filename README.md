@@ -1,4 +1,7 @@
-Introduction: Severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) is the virus that causes
+Introduction: 
+
+
+Severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) is the virus that causes
 coronavirus disease 2019 (COVID-19). The COVID-19 outbreak originated in Wuhan, Hubei province,
 China. It has since developed into a pandemic virus that nearly 124.0 Million people have contracted,
 and 6.6 million people have died from(1). Severe acute respiratory syndrome is the virus that caused the
@@ -12,6 +15,8 @@ site. dS is the number of synonymous (i.e., silent) changes between two sequence
 often assumed to represent the neutral rate of substitution. dN/dS represents the ratio of non-synonymous
 mutations per non-synonymous site (dN) to synonymous mutations per synonymous site (dS), and is the
 rate of protein evolution.
+
+
 Methods: My project was executed using whole genome data from SARS and Covid-19 at the National
 Center for Biotechnology Information (NCBI) RefSeq genome collection. The software I used was R (version 4.2.2), Blast+ ( version 2.2.31+), Argtable(version 2.13), Clustal Omega (“clustalo”)(version clustalomega-1.2.4.), KaKs_Calculator (version 1.2), biomartr (version 1.0.2), and Ubuntu (version 22.04.1). Using
 Ubuntu as the operating system on Linux by which I executed all of my commands, I first installed R into
@@ -41,6 +46,8 @@ genome). I then clicked on the main link in the “Genome” section at the top 
 the gene names, I searched the GenBank formatted files for each genome to get detailed gene and other
 information. On the main genome assembly page for Covid-19, I found the GenBank formatted files under
 the “Chromosomes” section of the genome pages and clicking on the link under “RefSeq”
+
+
 Discussion: The predominant mode of selection acting on viral genes in my analysis was purifying selection.
 Purifying selection is a type of selection that reduces the probability of fixation of a deleterious allele. The
 low dN/dS value (< 1) for the orthologous gene pairs from the Covid-19 and SARS genome indicates that
@@ -53,6 +60,8 @@ and the orthologous gene pairs from the Covid-19 and SARS genome that show dS > 
 glycoprotein and the ORF1a polyprotein. Thus, we can ascertain that one reason the Spike glycoprotein and
 ORF1a polyprotein genes differ in evolutionary rate in comparison to other protein coding genes, is because
 purifying selection is eliminating non-synonymous mutations at a faster rate than synonymous mutations.
+
+
 Works Cited
 1) World Health Organization. (2022, December 19). “WHO Coronavirus (COVID-19) Dashboard.”
 Retrieved from https://covid19.who.int/
